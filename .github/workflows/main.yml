@@ -10,16 +10,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Node
+      - name: Setup node
         uses: actions/setup-node@v1
         with:
           node-version: "14.x"
 
-      - run: |
+      - name: Build
+        run: |
           yarn
           yarn build
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
 
-      - name:
+      - name: Update Firebase
+        run: |
+          yarn run firebase:deploy --project '${{ secrets.FIREBASE_PROJECT_ID }}'
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy site
         uses: JamesIves/github-pages-deploy-action@4.1.2
         with:
           branch: gh-pages

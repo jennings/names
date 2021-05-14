@@ -1,39 +1,31 @@
 <script lang="ts">
-  import NamePicker from "./NamePicker.svelte";
-  import { firstNames, middleNames, lastNames } from "./store";
+  import { auth, authenticatedUser, authUI, authUIConfig } from "./firebase";
+  import NameRandomizer from "./NameRandomizer.svelte";
 
-  let firstName = "Carol";
-  let middleName = "";
-  let lastName = "Jennings";
+  authUI.start("#firebaseui-auth-container", {
+    ...authUIConfig,
+    callbacks: {
+      signInSuccessWithAuthResult(result, redirectUrl) {
+        return false;
+      },
+    },
+  });
+
+  function signOut() {
+    auth.signOut();
+  }
 </script>
 
 <main>
-  {firstName}
-  {middleName}
-  {lastName}.
-  <br />
-
-  <div class="pickers">
-    <NamePicker
-      names={$firstNames}
-      value={firstName}
-      on:change={(e) => (firstName = e.detail.value)}
-      on:add-name={(e) => firstNames.update((n) => [...n, e.detail])}
-    />
-
-    <NamePicker
-      names={$middleNames}
-      value={middleName}
-      on:change={(e) => (middleName = e.detail.value)}
-      on:add-name={(e) => middleNames.update((n) => [...n, e.detail])}
-    />
-    <NamePicker
-      names={$lastNames}
-      value={lastName}
-      on:change={(e) => (lastName = e.detail.value)}
-      on:add-name={(e) => lastNames.update((n) => [...n, e.detail])}
-    />
-  </div>
+  {#if $authenticatedUser}
+    <NameRandomizer />
+    <div>
+      Signed in as: {$authenticatedUser.displayName}<br />
+      <button on:click={signOut}>Sign out</button>
+    </div>
+  {:else}
+    <div id="firebaseui-auth-container" />
+  {/if}
 </main>
 
 <style>
@@ -44,22 +36,9 @@
     margin: 0 auto;
   }
 
-  h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 4em;
-    font-weight: 100;
-  }
-
   @media (min-width: 640px) {
     main {
       max-width: none;
     }
-  }
-
-  .pickers {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
   }
 </style>
